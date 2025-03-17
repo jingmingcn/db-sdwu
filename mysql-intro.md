@@ -60,8 +60,8 @@ jingming@sdu.edu.cn
 
 1. 解压安装包到指定目录，如：`D:\mysql-8.0.41-winx64`
 2. 运行 `cmd`，进入解压目录下的 `bin` 目录
-3. 执行命令：`mysqld --initialize-insecure --console` ，初始化数据库。
-   或者：   执行命令`mysqld --initialize`或`mysqld -I `， 然后在解压目录下打开`data`文件夹，打到.err文件，查看随机生成的密码。
+3. 执行命令：`mysqld --initialize-insecure --console` ，初始化数据库，默认密码为空。
+   或者：   执行命令`mysqld --initialize`或`mysqld -I `， 然后在解压目录下打开`data`文件夹，找到.err文件，查看随机生成的密码。
 4. 再次执行命令：`mysqld`，启动MySQL数据库。
 5. 执行命令：`mysql -u root -p`，登录 MySQL 数据库
 6. 输入密码：默认空密码，或者查看.err文件中的密码，登录成功。
