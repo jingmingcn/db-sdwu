@@ -23,6 +23,7 @@ public class StudentManagementSystem extends JFrame {
     
     // Data Access Object
     private StudentDAO studentDAO;
+    private TeacherDAO teacherDAO;
     
     /**
      * Constructor
@@ -30,10 +31,12 @@ public class StudentManagementSystem extends JFrame {
     public StudentManagementSystem() {
         // Initialize the DAO
         studentDAO = new StudentDAO();
+        teacherDAO = new TeacherDAO();
         
         // Initialize the database
         try {
             studentDAO.initializeDatabase();
+            teacherDAO.initializeDatabase();
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, 
                 "Failed to initialize database: " + e.getMessage(), 
@@ -54,33 +57,41 @@ public class StudentManagementSystem extends JFrame {
      */
     private void initializeUI() {
         // Set frame properties
-        setTitle("Student Management System");
+        setTitle("Academic Management System");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         
-        // Create the main panel with border layout
-        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        // Create tab pane
+        JTabbedPane tabbedPane = new JTabbedPane();
         
-        // Create the form panel
-        JPanel formPanel = createFormPanel();
-        mainPanel.add(formPanel, BorderLayout.NORTH);
+        // Create student panel
+        JPanel studentPanel = new JPanel(new BorderLayout(10, 10));
+        studentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
-        // Create the table panel
-        JPanel tablePanel = createTablePanel();
-        mainPanel.add(tablePanel, BorderLayout.CENTER);
+        // Add components to student panel
+        JPanel studentFormPanel = createFormPanel();
+        studentPanel.add(studentFormPanel, BorderLayout.NORTH);
         
-        // Create the button panel
-        JPanel buttonPanel = createButtonPanel();
-        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+        JPanel studentTablePanel = createTablePanel();
+        studentPanel.add(studentTablePanel, BorderLayout.CENTER);
+        
+        JPanel studentButtonPanel = createButtonPanel();
+        studentPanel.add(studentButtonPanel, BorderLayout.SOUTH);
+        
+        // Create teacher panel
+        JPanel teacherPanel = createTeacherPanel();
+        
+        // Add tabs
+        tabbedPane.addTab("Students", studentPanel);
+        tabbedPane.addTab("Teachers", teacherPanel);
         
         // Create the menu bar
         JMenuBar menuBar = createMenuBar();
         setJMenuBar(menuBar);
         
-        // Add the main panel to the frame
-        add(mainPanel);
+        // Add the tabbed pane to the frame
+        add(tabbedPane);
     }
     
     /**
@@ -524,5 +535,13 @@ public class StudentManagementSystem extends JFrame {
             StudentManagementSystem app = new StudentManagementSystem();
             app.setVisible(true);
         });
+    }
+
+    /**
+     * Add new method for creating teacher panel
+     */
+    private JPanel createTeacherPanel() {
+        TeacherManagementPanel teacherPanel = new TeacherManagementPanel();
+        return teacherPanel;
     }
 }
