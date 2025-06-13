@@ -1,0 +1,220 @@
+当然可以！以下是一个综合练习题，涵盖 ER图设计、关系模式设计、SQL语句编写 以及 事务处理，适合作为《数据库系统》课程的综合练习。
+
+⸻
+
+🧠【综合练习题】：大学选课系统设计与实现
+
+一、背景描述
+
+某大学希望建立一个选课系统，实现以下功能：
+	1.	学生可以选修多个课程，每门课程可以被多个学生选修。
+	2.	每门课程由一位教师授课。
+	3.	教师可以开设多门课程。
+	4.	系统需要记录学生的选课成绩。
+	5.	学生和教师分别属于某个学院。
+	6.	学生不能重复选同一门课。
+	7.	成绩录入后不能随意修改，除非由管理员审批（简化处理为：事务控制部分模拟该操作）
+
+⸻
+
+二、任务要求
+
+1. 绘制ER图
+
+请绘制选课系统的ER图，至少包括以下实体及其属性：
+	•	学生（学号、姓名、性别、出生年月、所属学院）
+	•	教师（工号、姓名、职称、所属学院）
+	•	课程（课程号、课程名、学分）
+	•	学院（学院编号、学院名称）
+	•	选课（成绩）
+
+注意关系设计：
+	•	学生-选课-课程：多对多关系，需要引入关系实体。
+	•	教师-课程：一对多关系。
+	•	学生/教师-学院：多对一关系。
+
+⸻
+
+2. 根据ER图设计关系表结构（给出建表SQL）
+
+设计数据库的关系模式并用SQL实现表结构。
+
+⸻
+
+3. SQL操作题
+
+请用SQL完成以下操作：
+	1.	查询“计算机学院”的所有学生姓名和所属学院名称。
+	2.	查询张老师所教的所有课程名称。
+	3.	查询每门课程的平均成绩，按成绩从高到低排序。
+	4.	查询没有选修任何课程的学生。
+	5.	插入一个学生选课记录（需检查是否已选该课程）。
+	6.	删除一门课程（要求连同选课记录一起删除）。
+
+⸻
+
+4. 事务处理题（使用 SQL 事务语句）
+
+模拟以下场景：
+
+学生A的选课成绩需要从原来成绩修改为新成绩。考虑到敏感性，该过程需在事务中进行：
+	•	先备份原成绩；
+	•	更新成绩；
+	•	如果更新过程中出现问题，回滚事务；
+	•	否则提交事务。
+
+⸻
+
+三、参考答案
+
+1. ER图（文字描述）
+
+实体：
+Student(StuID, Name, Gender, BirthDate, DeptID)
+Teacher(TeaID, Name, Title, DeptID)
+Course(CourseID, Name, Credit, TeaID)
+Department(DeptID, DeptName)
+Enrollment(StuID, CourseID, Grade)
+
+关系：
+- Student : Department = N : 1
+- Teacher : Department = N : 1
+- Teacher : Course = 1 : N
+- Student : Course = M : N （通过 Enrollment 解决）
+
+
+⸻
+
+2. 建表SQL语句
+
+CREATE TABLE Department (
+    DeptID CHAR(4) PRIMARY KEY,
+    DeptName VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE Student (
+    StuID CHAR(10) PRIMARY KEY,
+    Name VARCHAR(50),
+    Gender CHAR(1),
+    BirthDate DATE,
+    DeptID CHAR(4),
+    FOREIGN KEY (DeptID) REFERENCES Department(DeptID)
+);
+
+CREATE TABLE Teacher (
+    TeaID CHAR(10) PRIMARY KEY,
+    Name VARCHAR(50),
+    Title VARCHAR(20),
+    DeptID CHAR(4),
+    FOREIGN KEY (DeptID) REFERENCES Department(DeptID)
+);
+
+CREATE TABLE Course (
+    CourseID CHAR(10) PRIMARY KEY,
+    Name VARCHAR(100),
+    Credit INT,
+    TeaID CHAR(10),
+    FOREIGN KEY (TeaID) REFERENCES Teacher(TeaID)
+);
+
+CREATE TABLE Enrollment (
+    StuID CHAR(10),
+    CourseID CHAR(10),
+    Grade DECIMAL(4,1),
+    PRIMARY KEY (StuID, CourseID),
+    FOREIGN KEY (StuID) REFERENCES Student(StuID),
+    FOREIGN KEY (CourseID) REFERENCES Course(CourseID)
+);
+
+
+⸻
+
+3. SQL操作参考答案
+	1.	查询“计算机学院”的所有学生姓名和所属学院名称：
+
+SELECT S.Name, D.DeptName
+FROM Student S
+JOIN Department D ON S.DeptID = D.DeptID
+WHERE D.DeptName = '计算机学院';
+
+	2.	查询张老师所教的所有课程名称：
+
+SELECT C.Name
+FROM Course C
+JOIN Teacher T ON C.TeaID = T.TeaID
+WHERE T.Name = '张老师';
+
+	3.	查询每门课程的平均成绩，按成绩从高到低排序：
+
+SELECT C.Name, AVG(E.Grade) AS AvgGrade
+FROM Course C
+JOIN Enrollment E ON C.CourseID = E.CourseID
+GROUP BY C.Name
+ORDER BY AvgGrade DESC;
+
+	4.	查询没有选修任何课程的学生：
+
+SELECT S.Name
+FROM Student S
+LEFT JOIN Enrollment E ON S.StuID = E.StuID
+WHERE E.CourseID IS NULL;
+
+	5.	插入一个学生选课记录（检查是否已选）：
+
+-- 假设要插入学生 20231001 选修课程 CS101，成绩待定
+INSERT INTO Enrollment (StuID, CourseID, Grade)
+SELECT '20231001', 'CS101', NULL
+WHERE NOT EXISTS (
+    SELECT * FROM Enrollment
+    WHERE StuID = '20231001' AND CourseID = 'CS101'
+);
+
+	6.	删除一门课程（连带选课记录）：
+
+-- 假设删除课程 CS101
+DELETE FROM Enrollment WHERE CourseID = 'CS101';
+DELETE FROM Course WHERE CourseID = 'CS101';
+
+
+⸻
+
+4. 事务处理示例
+
+-- 修改学生 20231001 在课程 CS101 的成绩为 85
+BEGIN;
+
+-- 备份旧成绩
+INSERT INTO Backup_Enrollment (StuID, CourseID, Grade)
+SELECT StuID, CourseID, Grade
+FROM Enrollment
+WHERE StuID = '20231001' AND CourseID = 'CS101';
+
+-- 更新成绩
+UPDATE Enrollment
+SET Grade = 85
+WHERE StuID = '20231001' AND CourseID = 'CS101';
+
+-- 检查是否更新成功
+-- 假设检查成功则提交，否则回滚
+-- 模拟：假如没有异常
+
+COMMIT;
+
+-- 如果过程中发现问题（如未找到记录）
+-- ROLLBACK;
+
+（说明：Backup_Enrollment 表需事先创建，结构与 Enrollment 相同。）
+
+⸻
+
+四、扩展建议
+
+可以将本练习作为期末课程设计的一部分，扩展如下：
+	•	增加管理员模块；
+	•	用触发器防止成绩被随意更改；
+	•	加入视图，如“学生成绩总览视图”；
+	•	使用事务+并发控制模拟多人同时选课的场景。
+
+⸻
+
+如需提供 Word/PDF 格式的试题或 ER 图绘制模板，我也可以帮你生成。是否需要？
